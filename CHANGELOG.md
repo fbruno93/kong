@@ -62,6 +62,16 @@
 - [0.10.0](#0100---20170307)
 - [0.9.9 and prior](#099---20170202)
 
+
+## [2.9.0] (UNRELEASED)
+
+### Additions
+
+#### Core
+
+- Plugins can now implement `exit_worker` handler.
+
+
 ## [2.8.0]
 
 ### Deprecations
