@@ -68,12 +68,14 @@ local function http_send_spans(premature, uri, spans)
   local pb_data = assert(to_pb(req))
 
   local httpc = http.new()
-  local res, err = httpc:request_uri("http://172.17.0.10:4318/v1/traces", {
+  -- https://ingest.lightstep.com:443/traces/otlp/v0.9
+  -- http://172.17.0.10:4318/v1/traces
+  local res, err = httpc:request_uri("https://ingest.lightstep.com:443/traces/otlp/v0.6", {
     method = "POST",
     body = pb_data,
     headers = {
       ["Content-Type"] = "application/x-protobuf",
-      -- ["Lightstep-Access-Token"] = "50wl2iOB2w3M4Db521IWxlyauiezBbvjNXcqHHTtOvZ/lhkaSwvxDm59LOJqjgCURgu8/ecUFSTo+0ypX07Elwy0z6t3YVbxd0o8fZyl",
+      ["Lightstep-Access-Token"] = "50wl2iOB2w3M4Db521IWxlyauiezBbvjNXcqHHTtOvZ/lhkaSwvxDm59LOJqjgCURgu8/ecUFSTo+0ypX07Elwy0z6t3YVbxd0o8fZyl",
     },
     ssl_verify = false,
   })

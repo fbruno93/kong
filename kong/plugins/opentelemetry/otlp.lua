@@ -87,6 +87,7 @@ local function otlp_export_request(spans)
   }
   -- InstrumentationLibrarySpans
   local lib_spans = {
+    instrumentation_library = { name = "opentelemetry-plugin", version = "0.0.1" },
     spans = new_tab(#spans, 0),
   }
   for _, span in ipairs(spans) do
