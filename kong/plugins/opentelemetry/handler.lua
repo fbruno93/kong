@@ -9,7 +9,7 @@ local ngx = ngx
 local inspect = require "inspect"
 local kong = kong
 local http = require "resty.http"
-
+local fmt = string.format
 
 local OpenTelemetryHandler = {
   VERSION = "0.0.1",
@@ -26,17 +26,20 @@ function OpenTelemetryHandler:init_worker()
   assert(load_pb())
 end
 
-
 function OpenTelemetryHandler:access(conf)
-  local span = kong.tracer:start_span(ngx.ctx, "access")
+  local ngx_ctx = ngx.ctx
+  local route = kong.router.get_route()
+  local service = kong.router.get_service()
+
+  local span_name = route and route.name or kong.request.get_path()
+
+  local span = kong.tracer:start_span(ngx_ctx, fmt("access %s", span_name), 2, ngx.ctx.KONG_PROCESSING_START * 1000000)
   span:set_attribute("node", kong.node.get_hostname())
   span:set_attribute("http.host", kong.request.get_host())
   span:set_attribute("http.version", kong.request.get_http_version())
   span:set_attribute("http.method", kong.request.get_method())
   span:set_attribute("http.path", kong.request.get_path())
 
-  local route = kong.router.get_route()
-  local service = kong.router.get_service()
   if route and service then
     span:set_attribute("route.name", route.name)
     span:set_attribute("service.name", service.name)    
@@ -91,9 +94,35 @@ local function http_send_spans(premature, uri, spans)
   ngx.log(ngx.NOTICE, "sent single trace, status: ", res.status)
 end
 
+local function attach_balancer_data(ctx)
+  local balancer_data = ngx.ctx.balancer_data
+  if not balancer_data then
+    return
+  end
+
+  local balancer_tries = balancer_data.tries
+  local hostname = balancer_data.hostname
+  for i = 1, balancer_data.try_count do
+    local try = balancer_tries[i]
+    local span = kong.tracer:start_span(ctx, fmt("upstream %s", hostname), 3, try.balancer_start * 1000000)
+
+    span:set_attribute("peer.service", hostname)
+    if try.balancer_latency ~= nil then
+      span:finish((try.balancer_start + try.balancer_latency) * 1000000)
+    else
+      span:finish()
+    end
+  end
+
+end
 
 -- collect trace and spans
 function OpenTelemetryHandler:log(conf) -- luacheck: ignore 212
+  -- !!!! balancer
+  local balancer_span = kong.tracer:start_span(ngx.ctx, "upstream", 1, ngx.ctx.KONG_BALANCER_START * 1000000)
+  balancer_span:finish(ngx.ctx.KONG_BODY_FILTER_ENDED_AT * 1000000)
+
+  -- attach_balancer_data(ngx.ctx)
   local spans = kong.tracer:spans_from_ctx()
   if type(spans) ~= "table" or #spans == 0 then
     ngx.log(ngx.NOTICE, "skip empty spans")

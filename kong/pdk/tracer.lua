@@ -180,7 +180,7 @@ function span_mt:finish(end_time_unix_nano)
   if end_time_unix_nano ~= nil then
     assert(type(end_time_unix_nano) == "number" and end_time_unix_nano >= 0,
     "invalid span finish timestamp")
-    assert(end_time_unix_nano - self.end_time_unix_nano >= 0, "invalid span duration")
+    assert(end_time_unix_nano - self.start_time_unix_nano >= 0, "invalid span duration")
   else
     end_time_unix_nano = ffi_time_unix_nano()
   end
@@ -273,7 +273,7 @@ local function connector_query_wrap(connector)
 
   local function query(self, sql, ...)
 
-    local span = kong.tracer:start_span(ngx.ctx, "query", nil)
+    local span = kong.tracer:start_span(ngx.ctx, "query")
     span:set_attribute("query", sql) -- TODO: skip noop span
 
     local r = pack(query_orig(self, sql, ...))
@@ -287,10 +287,27 @@ local function connector_query_wrap(connector)
 end
 
 
+-- router wrapper
+local function wrap_router(router)
+  local exec_orig = router.exec
+
+  local function exec(ngx)
+    local span = kong.tracer:start_span(ngx.ctx, "router")
+    local r = pack(exec_orig(ngx))
+
+    span:finish()
+
+    return unpack(r)
+  end
+
+  router.exec = exec
+end
+
 return {
   new = function()
     return new_tracer("noop") -- create noop global tracer by default
   end,
   -- helpers
   connector_query_wrap = connector_query_wrap,
+  wrap_router = wrap_router,
 }
