@@ -23,7 +23,7 @@ local function _to_otlp_attributes(tab)
   for k, v in pairs(tab) do
     insert(attributes, {
       key = k,
-      value = v,
+      value = { v }, -- AnyValue, must be a Lua table
     })
   end
   return attributes
@@ -61,7 +61,7 @@ local function to_otlp_span(span)
     end_time_unix_nano = span.end_time_unix_nano,
     attributes = _to_otlp_attributes(span.attributes),
     -- dropped_attributes_count = {},
-    events = _to_otlp_events(span.events),
+    -- events = _to_otlp_events(span.events),
     -- dropped_events_count = 1,
     -- links = {},
     -- dropped_links_count = 1,

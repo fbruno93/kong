@@ -8,6 +8,7 @@ local insert = table.insert
 local ngx = ngx
 local inspect = require "inspect"
 local kong = kong
+local http = require "resty.http"
 
 
 local OpenTelemetryHandler = {
@@ -28,8 +29,18 @@ end
 
 function OpenTelemetryHandler:access(conf)
   local span = kong.tracer:start_span(ngx.ctx, "access")
-  span:set_attribute("route.name", "test")
-  ngx.log(ngx.ERR, "--------------access")
+  span:set_attribute("node", kong.node.get_hostname())
+  span:set_attribute("http.host", kong.request.get_host())
+  span:set_attribute("http.version", kong.request.get_http_version())
+  span:set_attribute("http.method", kong.request.get_method())
+  span:set_attribute("http.path", kong.request.get_path())
+
+  local route = kong.router.get_route()
+  local service = kong.router.get_service()
+  if route and service then
+    span:set_attribute("route.name", route.name)
+    span:set_attribute("service.name", service.name)    
+  end
 end
 
 
@@ -46,16 +57,39 @@ function OpenTelemetryHandler:body_filter()
 end
 
 
--- collect trace and spans
-function OpenTelemetryHandler:log(conf) -- luacheck: ignore 212
-  local spans = kong.tracer:spans_from_ctx()
-  if spans == nil or #spans == 0 then
-    ngx.log(ngx.NOTICE, "skip empty spans")
+local function http_send_spans(premature, uri, spans)
+  if premature then
     return
   end
 
   local req = assert(otlp_export_request(spans))
   ngx.log(ngx.NOTICE, inspect(req))
+
+  local pb_data = assert(to_pb(req))
+
+  local httpc = http.new()
+  local res, err = httpc:request_uri(uri, {
+    method = "POST",
+    body = pb_data,
+    headers = {
+      ["Content-Type"] = "application/x-protobuf",
+    },
+  })
+  if not res then
+    ngx.log(ngx.ERR, "request failed: ", err)
+    return
+  end
+end
+
+-- collect trace and spans
+function OpenTelemetryHandler:log(conf) -- luacheck: ignore 212
+  local spans = kong.tracer:spans_from_ctx()
+  if type(spans) ~= "table" or #spans == 0 then
+    ngx.log(ngx.NOTICE, "skip empty spans")
+    return
+  end
+
+  ngx.timer.at(0, http_send_spans, conf.http_endpoint, spans)
 end
 
 
