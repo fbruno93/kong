@@ -68,18 +68,27 @@ local function http_send_spans(premature, uri, spans)
   local pb_data = assert(to_pb(req))
 
   local httpc = http.new()
-  local res, err = httpc:request_uri(uri, {
+  local res, err = httpc:request_uri("http://172.17.0.10:4318/v1/traces", {
     method = "POST",
     body = pb_data,
     headers = {
       ["Content-Type"] = "application/x-protobuf",
+      -- ["Lightstep-Access-Token"] = "50wl2iOB2w3M4Db521IWxlyauiezBbvjNXcqHHTtOvZ/lhkaSwvxDm59LOJqjgCURgu8/ecUFSTo+0ypX07Elwy0z6t3YVbxd0o8fZyl",
     },
+    ssl_verify = false,
   })
   if not res then
     ngx.log(ngx.ERR, "request failed: ", err)
     return
   end
+
+  if res.status ~= 200 then
+    ngx.log(ngx.ERR, "request failed: ", res.body)
+  end
+
+  ngx.log(ngx.NOTICE, "sent single trace, status: ", res.status)
 end
+
 
 -- collect trace and spans
 function OpenTelemetryHandler:log(conf) -- luacheck: ignore 212
