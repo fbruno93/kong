@@ -34,7 +34,7 @@ end
 
 local function ffi_time_unix_nano()
   local t = ffi_clock_gettime()
-  return tonumber(t.tv_sec) * 100000000 + tonumber(t.tv_nsec)
+  return tonumber(t.tv_sec) * 1000000000 + tonumber(t.tv_nsec)
 end
 
 
