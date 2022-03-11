@@ -374,6 +374,7 @@ do
       end
       ngx.sleep(0.2) -- poll-wait
     end
+    os.execute("cat servroot/logs/error.log")
     return false
   end
 
