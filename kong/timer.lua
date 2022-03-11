@@ -713,6 +713,8 @@ local function worker_timer_callback(premature, self, thread_index)
                 break
             end
 
+            sleep(0.001)
+
         end
 
         if thread.counter.trigger > self.opt.recreate_interval == 0 then
