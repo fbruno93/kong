@@ -924,9 +924,18 @@ function _M:once(name, callback, delay, ...)
     assert(type(delay) == "number", "expected `delay to be a number")
     assert(delay >= 0, "expected `delay` to be greater than or equal to 0")
 
-    if delay >= MAX_EXPIRE or delay == 0 then
+    if delay >= MAX_EXPIRE then
         local ok, err = timer_at(delay, callback, ...)
         return ok ~= nil, err
+    end
+
+    if delay == 0 then
+        name = tostring(math.random())
+        local job = job_create(self, name, callback, 10, true, { ... })
+        self.wheels.pending_jobs[name] = job
+        self.semaphore:post(1)
+        self.jobs[name] = job
+        return true, nil
     end
 
     delay = max(delay, 0.11)
