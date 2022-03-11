@@ -34,6 +34,7 @@ if [ "$TEST_SUITE" == "integration" ]; then
     if [[ "$TEST_SPLIT" == first* ]]; then
         # GitHub Actions, run first batch of integration tests
         # eval "$TEST_CMD" $(ls -d spec/02-integration/* | head -n4)
+        pwd
 
     elif [[ "$TEST_SPLIT" == second* ]]; then
         # GitHub Actions, run second batch of integration tests
