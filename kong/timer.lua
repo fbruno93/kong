@@ -697,6 +697,10 @@ local function worker_timer_callback(premature, self, thread_index)
                 if job_is_runable(job) then
                     job_wrapper(job)
 
+                    if job.imd then
+                        log(ERR, "+++++++++")
+                    end
+
                     if job_is_once(job) then
                         jobs[name] = nil
 
@@ -930,11 +934,13 @@ function _M:once(name, callback, delay, ...)
     end
 
     if delay == 0 then
+        log(ERR, debug.traceback())
         name = tostring(math.random())
         local job = job_create(self, name, callback, 10, true, { ... })
         self.wheels.pending_jobs[name] = job
         self.semaphore:post(1)
         self.jobs[name] = job
+        job.imd = true
         return true, nil
     end
 
