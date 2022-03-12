@@ -60,7 +60,7 @@ end
 
 require("kong.globalpatches")()
 local timer = require("kong.timer")
-timer:configure({ threads = 100 })
+timer:configure({ threads = 150 })
 
 local unpack = table.unpack
 

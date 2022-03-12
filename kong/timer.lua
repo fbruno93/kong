@@ -801,7 +801,7 @@ end
 local function create(self ,name, callback, delay, once, args)
     local jobs = self.jobs
     if not name then
-        name = tostring(math.random())
+        name = tostring(math.random(65535))
     end
 
     if jobs[name] then
@@ -937,7 +937,7 @@ function _M:once(name, callback, delay, ...)
 
     if delay == 0 then
         log(ERR, debug.traceback())
-        name = tostring(math.random())
+        name = tostring(math.random(65535))
         local job = job_create(self, name, callback, 10, true, { ... })
         self.wheels.pending_jobs[name] = job
         self.semaphore:post(1)
