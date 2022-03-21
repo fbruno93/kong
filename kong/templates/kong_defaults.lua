@@ -178,4 +178,12 @@ pluginserver_names = NONE
 untrusted_lua = sandbox
 untrusted_lua_sandbox_requires =
 untrusted_lua_sandbox_environment =
+
+ip2location_database = /usr/share/ip2location/DB3.BIN
+ip2location_proxy_recursive = on
+ip2location_proxy = 0.0.0.0/0
+
+ip2proxy_database = /usr/share/ip2location/PX2.BIN
+ip2proxy_proxy_recursive = on 
+ip2proxy_proxy = 0.0.0.0/0
 ]]
