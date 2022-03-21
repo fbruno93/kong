@@ -1544,3 +1544,49 @@
                                      # **Warning**: Certain variables, when made
                                      # available, may create opportunities to
                                      # escape the sandbox.
+
+#------------------------------------------------------------------------------
+# IP2LOCATION
+#------------------------------------------------------------------------------
+
+# Additional settings inherited from ip2location allowing for geolocation
+# of ip client
+#
+# See the ip2location documentation for more information:
+# https://www.ip2location.com/development-libraries/ip2location/nginx
+
+
+#ip2location_database = /usr/share/ip2location/DB3.BIN
+                                  # The absolute path to IP2Location BIN database.
+                                  # Default value is on DB3.BIN file
+                                  #
+                                  # To disable feature set property without value
+
+#ip2location_proxy_recursive = on # Enable recursive search in the 
+                                  # x-forwarded-for headers.
+
+#ip2location_proxy 0.0.0.0/24     # Set a list of proxies to translate 
+                                  # x-forwarded-for headers for.
+
+#------------------------------------------------------------------------------
+# IP2PROXY
+#------------------------------------------------------------------------------
+
+# Additional settings inherited from ip2lproxy allowing for proxy information
+# of ip client
+#
+# See the ip2proxy documentation for more information:
+# https://www.ip2location.com/development-libraries/ip2proxy/nginx
+
+
+#ip2proxy_database = /usr/share/ip2location/PX2.BIN
+                                 # The absolute path to IP2Proxy BIN database.
+                                 # Default value is on PX2.BIN file
+                                 #
+                                 # To disable feature set property without value
+
+#ip2proxy_proxy_recursive = on   # Enable recursive search in the 
+                                 # x-forwarded-for headers.
+
+#ip2proxy_proxy = 0.0.0.0/24;    # Set a list of proxies to translate 
+                                 # x-forwarded-for headers for.

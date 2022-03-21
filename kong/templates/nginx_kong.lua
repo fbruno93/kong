@@ -99,16 +99,16 @@ lua_kong_load_var_index $upstream_http_trailer;
 lua_kong_load_var_index $upstream_http_upgrade;
 lua_kong_load_var_index $upstream_status;
 
-> if ip2location_database then
-    ip2location_database ${{IP2LOCATION_DATABASE}};
-    ip2location_proxy_recursive ${{IP2LOCATION_PROXY_RECURSIVE}};
-    ip2location_proxy ${{IP2LOCATION_PROXY}};
+> if ip2location_database and ip2location_database ~= "off"  then
+ip2location_database ${{IP2LOCATION_DATABASE}};
+ip2location_proxy_recursive ${{IP2LOCATION_PROXY_RECURSIVE}};
+ip2location_proxy ${{IP2LOCATION_PROXY}};
 > end
     
-> if ip2proxy_database then
-    ip2proxy_database ${{IP2PROXY_DATABASE}};
-    ip2proxy_proxy_recursive ${{IP2PROXY_PROXY_RECURSIVE}};
-    ip2proxy_proxy ${{IP2PROXY_PROXY}};
+> if ip2proxy_database and ip2proxy_database ~= "off" then
+ip2proxy_database ${{IP2PROXY_DATABASE}};
+ip2proxy_proxy_recursive ${{IP2PROXY_PROXY_RECURSIVE}};
+ip2proxy_proxy ${{IP2PROXY_PROXY}};
 > end
     
 upstream kong_upstream {
